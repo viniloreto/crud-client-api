@@ -15,5 +15,4 @@ app.use(bodyParser.urlencoded({ extended: false }))
 require('./controllers/index')(app);
 
 
-app.listen(8082);
-console.log('API Working on port 8082');
+app.listen(process.env.PORT || 8082);

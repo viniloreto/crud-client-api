@@ -10,6 +10,7 @@ router.get('/allClients', (req, res) => {
     const clients = [];
 
     const page = req.query.page;
+    const search = req.query.search;
     let limit = null;
     let skip = null;
 
@@ -22,9 +23,18 @@ router.get('/allClients', (req, res) => {
             skip = limit * (page - 1); ;
         }
     }
+    let query = '';
 
-    let query = 'MATCH (u:Client) WITH COUNT(u) AS totalClients MATCH (u:Client) \
-                    RETURN totalClients, u';
+    if(search) {
+        query=`MATCH (u:Client) WHERE u.name CONTAINS '${search.toUpperCase()}' \ 
+                WITH COUNT(u) AS totalClients MATCH (u:Client) \
+                WHERE u.name CONTAINS '${search.toUpperCase()}' \
+                RETURN totalClients, u`
+
+    }else{
+        query = 'MATCH (u:Client) WITH COUNT(u) AS totalClients MATCH (u:Client) \
+            RETURN totalClients, u';
+    }    
     
     if(skip){
         query += ` SKIP $skipValue` 
@@ -71,7 +81,7 @@ router.post('/addClient', (req, res) => {
         .run('CREATE (n:Client { name: $clientName, country: $clientCountry, \
                 age: $clientAge, email:$clientEmail, cpf: $clientCpf })',
             {
-                clientName: name, 
+                clientName: name.toUpperCase(), 
                 clientCountry: country, 
                 clientAge: age, 
                 clientEmail: email, 
@@ -125,7 +135,7 @@ router.put('/editClient', (req, res) => {
                 n.cpf = $clientCpf',
             { 
                 clientId: id, 
-                clientName: name,
+                clientName: name.toUpperCase(),
                 clientCountry: country,
                 clientAge: age,
                 clientEmail: email,
